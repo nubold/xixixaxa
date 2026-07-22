@@ -111,7 +111,7 @@ end
 
 local settingsCreated = false
 local settingsInitialized = false
-local prompt = useStudio and require(script.Parent.prompt) or loadWithTimeout('https://raw.githubusercontent.com/Nullod/gui/refs/heads/main/prompt.lua')
+local prompt = useStudio and require(script.Parent.prompt) or loadWithTimeout('https://raw.githubusercontent.com/nubold/xixixaxa/refs/heads/main/prompt.lua')
 
 if not prompt and not useStudio then
 	warn("Failed to load prompt library, using fallback")
@@ -794,7 +794,7 @@ local dragOffsetMobile = 150
 Rayfield.DisplayOrder = 100
 LoadingFrame.Version.Text = Release
 
-local Icons = useStudio and require(script.Parent.icons) or loadWithTimeout('https://raw.githubusercontent.com/Nullod/gui/refs/heads/main/icons.lua')
+local Icons = useStudio and require(script.Parent.icons) or loadWithTimeout('https://raw.githubusercontent.com/nubold/xixixaxa/refs/heads/main/icons.lua')
 
 local CFileName = nil
 local CEnabled = false
