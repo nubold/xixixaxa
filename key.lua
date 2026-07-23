@@ -39,13 +39,10 @@ local RayfieldLibrary = {}
 function RayfieldLibrary:CreateWindow(Settings)
 	local Passthrough = false
 
-	if Settings.Discord and Settings.Discord.Enabled and Settings.Discord.Invite and not useStudio then
+	if Settings.Discord and Settings.Discord.Enabled and not useStudio then
 		ensureFolder(RayfieldFolder.."/Discord Invites")
 
-		local inviteCode = tostring(Settings.Discord.Invite)
-		local filePath = RayfieldFolder.."/Discord Invites/"..inviteCode..ConfigurationExtension
-
-		if not callSafely(isfile, filePath) then
+		if not callSafely(isfile, RayfieldFolder.."/Discord Invites".."/"..Settings.Discord.Invite..ConfigurationExtension) then
 			if requestFunc then
 				pcall(function()
 					requestFunc({
@@ -58,14 +55,14 @@ function RayfieldLibrary:CreateWindow(Settings)
 						Body = HttpService:JSONEncode({
 							cmd = 'INVITE_BROWSER',
 							nonce = HttpService:GenerateGUID(false),
-							args = {code = inviteCode}
+							args = {code = Settings.Discord.Invite}
 						})
 					})
 				end)
 			end
 
 			if Settings.Discord.RememberJoins then
-				callSafely(writefile, filePath, "RememberJoins is true")
+				callSafely(writefile, RayfieldFolder.."/Discord Invites".."/"..Settings.Discord.Invite..ConfigurationExtension, "RememberJoins is true")
 			end
 		end
 	end
@@ -73,15 +70,12 @@ function RayfieldLibrary:CreateWindow(Settings)
 	if (Settings.KeySystem) then
 		if not Settings.KeySettings then
 			Passthrough = true
-		else
-			local AttemptsRemaining = Settings.KeySettings.MaxAttempts or 5
-			local objects = callSafely(game.GetObjects, game, "rbxassetid://11380036235")
-			local KeyUI = useStudio and script.Parent:FindFirstChild('Key') or (objects and objects[1])
+			return
+		end
 
-			if not KeyUI then
-				Passthrough = true
-				return RayfieldLibrary
-			end
+		if not Passthrough then
+			local AttemptsRemaining = Settings.KeySettings.MaxAttempts or 5
+			local KeyUI = useStudio and script.Parent:FindFirstChild('Key') or game:GetObjects("rbxassetid://11380036235")[1]
 
 			KeyUI.Enabled = true
 
@@ -112,108 +106,89 @@ function RayfieldLibrary:CreateWindow(Settings)
 				end
 			end
 
-			local KeyMain = KeyUI:FindFirstChild("Main")
-			if not KeyMain then
-				Passthrough = true
-				return RayfieldLibrary
-			end
-
-			if KeyMain:FindFirstChild("Title") then KeyMain.Title.Text = Settings.KeySettings.Title or Settings.Name or "Key System" end
-			if KeyMain:FindFirstChild("Subtitle") then KeyMain.Subtitle.Text = Settings.KeySettings.Subtitle or "Key System" end
-			if KeyMain:FindFirstChild("NoteMessage") then 
-				KeyMain.NoteMessage.Text = Settings.KeySettings.Note or "No instructions"
-				KeyMain.NoteMessage.TextWrapped = true
-				KeyMain.NoteMessage.TextScaled = true
-			end
+			local KeyMain = KeyUI.Main
+			KeyMain.Title.Text = Settings.KeySettings.Title or Settings.Name
+			KeyMain.Subtitle.Text = Settings.KeySettings.Subtitle or "Key System"
+			KeyMain.NoteMessage.Text = Settings.KeySettings.Note or "No instructions"
+			KeyMain.NoteMessage.TextWrapped = true
+			KeyMain.NoteMessage.TextScaled = true
 
 			KeyMain.Size = UDim2.new(0, 467, 0, 175)
 			KeyMain.BackgroundTransparency = 1
-			if KeyMain:FindFirstChild("Shadow") and KeyMain.Shadow:FindFirstChild("Image") then KeyMain.Shadow.Image.ImageTransparency = 1 end
-			if KeyMain:FindFirstChild("Title") then KeyMain.Title.TextTransparency = 1 end
-			if KeyMain:FindFirstChild("Subtitle") then KeyMain.Subtitle.TextTransparency = 1 end
-			if KeyMain:FindFirstChild("KeyNote") then KeyMain.KeyNote.TextTransparency = 1 end
-			if KeyMain:FindFirstChild("Input") then
-				KeyMain.Input.BackgroundTransparency = 1
-				if KeyMain.Input:FindFirstChild("UIStroke") then KeyMain.Input.UIStroke.Transparency = 1 end
-				if KeyMain.Input:FindFirstChild("InputBox") then KeyMain.Input.InputBox.TextTransparency = 1 end
-			end
-			if KeyMain:FindFirstChild("NoteTitle") then KeyMain.NoteTitle.TextTransparency = 1 end
-			if KeyMain:FindFirstChild("NoteMessage") then KeyMain.NoteMessage.TextTransparency = 1 end
-			if KeyMain:FindFirstChild("Hide") then KeyMain.Hide.ImageTransparency = 1 end
+			KeyMain.Shadow.Image.ImageTransparency = 1
+			KeyMain.Title.TextTransparency = 1
+			KeyMain.Subtitle.TextTransparency = 1
+			KeyMain.KeyNote.TextTransparency = 1
+			KeyMain.Input.BackgroundTransparency = 1
+			KeyMain.Input.UIStroke.Transparency = 1
+			KeyMain.Input.InputBox.TextTransparency = 1
+			KeyMain.NoteTitle.TextTransparency = 1
+			KeyMain.NoteMessage.TextTransparency = 1
+			KeyMain.Hide.ImageTransparency = 1
 
 			TweenService:Create(KeyMain, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
 			TweenService:Create(KeyMain, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Size = UDim2.new(0, 500, 0, 187)}):Play()
-			if KeyMain:FindFirstChild("Shadow") and KeyMain.Shadow:FindFirstChild("Image") then
-				TweenService:Create(KeyMain.Shadow.Image, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {ImageTransparency = 0.5}):Play()
-			end
+			TweenService:Create(KeyMain.Shadow.Image, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {ImageTransparency = 0.5}):Play()
 			task.wait(0.05)
-			if KeyMain:FindFirstChild("Title") then TweenService:Create(KeyMain.Title, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play() end
-			if KeyMain:FindFirstChild("Subtitle") then TweenService:Create(KeyMain.Subtitle, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play() end
+			TweenService:Create(KeyMain.Title, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
+			TweenService:Create(KeyMain.Subtitle, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
 			task.wait(0.05)
-			if KeyMain:FindFirstChild("KeyNote") then TweenService:Create(KeyMain.KeyNote, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play() end
-			if KeyMain:FindFirstChild("Input") then
-				TweenService:Create(KeyMain.Input, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-				if KeyMain.Input:FindFirstChild("UIStroke") then TweenService:Create(KeyMain.Input.UIStroke, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Transparency = 0}):Play() end
-				if KeyMain.Input:FindFirstChild("InputBox") then TweenService:Create(KeyMain.Input.InputBox, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play() end
-			end
+			TweenService:Create(KeyMain.KeyNote, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
+			TweenService:Create(KeyMain.Input, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
+			TweenService:Create(KeyMain.Input.UIStroke, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
+			TweenService:Create(KeyMain.Input.InputBox, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
 			task.wait(0.05)
-			if KeyMain:FindFirstChild("NoteTitle") then TweenService:Create(KeyMain.NoteTitle, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play() end
-			if KeyMain:FindFirstChild("NoteMessage") then TweenService:Create(KeyMain.NoteMessage, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play() end
+			TweenService:Create(KeyMain.NoteTitle, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
+			TweenService:Create(KeyMain.NoteMessage, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
 			task.wait(0.15)
-			if KeyMain:FindFirstChild("Hide") then TweenService:Create(KeyMain.Hide, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {ImageTransparency = 0.3}):Play() end
+			TweenService:Create(KeyMain.Hide, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {ImageTransparency = 0.3}):Play()
 
-			if KeyMain:FindFirstChild("Input") and KeyMain.Input:FindFirstChild("InputBox") then
-				KeyMain.Input.InputBox.FocusLost:Connect(function()
-					local enteredKey = KeyMain.Input.InputBox.Text
-					if #enteredKey == 0 then return end
-					local KeyFound = false
+			KeyUI.Main.Input.InputBox.FocusLost:Connect(function()
+				local enteredKey = KeyMain.Input.InputBox.Text
+				if #enteredKey == 0 then return end
+				local KeyFound = false
 
-					if Settings.KeySettings.API then
-						local success, response = pcall(function()
-							return game:HttpGet(tostring(Settings.KeySettings.API) .. enteredKey)
-						end)
-						local respStr = tostring(response or ""):lower()
-						if success and (respStr == "true" or respStr == "valid" or string.find(respStr, "success") or string.find(respStr, "valid")) then
-							KeyFound = true
-						end
-					else
-						if Settings.KeySettings.Key then
-							for _, MKey in ipairs(Settings.KeySettings.Key) do
-								if enteredKey == MKey then
-									KeyFound = true
-								end
+				if Settings.KeySettings.API then
+					local success, response = pcall(function()
+						return game:HttpGet(Settings.KeySettings.API .. enteredKey)
+					end)
+					if success and (response == "true" or response == "valid" or string.find(string.lower(response), "success") or string.find(string.lower(response), "valid")) then
+						KeyFound = true
+					end
+				else
+					if Settings.KeySettings.Key then
+						for _, MKey in ipairs(Settings.KeySettings.Key) do
+							if enteredKey == MKey then
+								KeyFound = true 
 							end
 						end
 					end
+				end
 
-					if KeyFound then
-						KeyUI:Destroy()
-						Passthrough = true
-					else
-						if AttemptsRemaining == 0 then
-							KeyUI:Destroy()
-							Players.LocalPlayer:Kick("No Attempts Remaining")
-							game:Shutdown()
-						end
-						KeyMain.Input.InputBox.Text = ""
-						AttemptsRemaining = AttemptsRemaining - 1
-						TweenService:Create(KeyMain, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Size = UDim2.new(0, 467, 0, 175)}):Play()
-						TweenService:Create(KeyMain, TweenInfo.new(0.4, Enum.EasingStyle.Elastic), {Position = UDim2.new(0.495,0,0.5,0)}):Play()
-						task.wait(0.1)
-						TweenService:Create(KeyMain, TweenInfo.new(0.4, Enum.EasingStyle.Elastic), {Position = UDim2.new(0.505,0,0.5,0)}):Play()
-						task.wait(0.1)
-						TweenService:Create(KeyMain, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {Position = UDim2.new(0.5,0,0.5,0)}):Play()
-						TweenService:Create(KeyMain, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Size = UDim2.new(0, 500, 0, 187)}):Play()
-					end
-				end)
-			end
-
-			if KeyMain:FindFirstChild("Hide") then
-				KeyMain.Hide.MouseButton1Click:Connect(function()
+				if KeyFound then
 					KeyUI:Destroy()
 					Passthrough = true
-				end)
-			end
+				else
+					if AttemptsRemaining == 0 then
+						KeyUI:Destroy()
+						Players.LocalPlayer:Kick("No Attempts Remaining")
+						game:Shutdown()
+					end
+					KeyMain.Input.InputBox.Text = ""
+					AttemptsRemaining = AttemptsRemaining - 1
+					TweenService:Create(KeyMain, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Size = UDim2.new(0, 467, 0, 175)}):Play()
+					TweenService:Create(KeyMain, TweenInfo.new(0.4, Enum.EasingStyle.Elastic), {Position = UDim2.new(0.495,0,0.5,0)}):Play()
+					task.wait(0.1)
+					TweenService:Create(KeyMain, TweenInfo.new(0.4, Enum.EasingStyle.Elastic), {Position = UDim2.new(0.505,0,0.5,0)}):Play()
+					task.wait(0.1)
+					TweenService:Create(KeyMain, TweenInfo.new(0.4, Enum.EasingStyle.Exponential), {Position = UDim2.new(0.5,0,0.5,0)}):Play()
+					TweenService:Create(KeyMain, TweenInfo.new(0.6, Enum.EasingStyle.Exponential), {Size = UDim2.new(0, 500, 0, 187)}):Play()
+				end
+			end)
+
+			KeyMain.Hide.MouseButton1Click:Connect(function()
+				KeyUI:Destroy()
+			end)
 		end
 	else
 		Passthrough = true
